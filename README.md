@@ -76,25 +76,62 @@ All the best,
 
 Short clips, no sound:
 
-- [`Tfv1.mp4`](Showcase/Tfv1.mp4) — the fish tank in motion
-- [`TFv2.mp4`](Showcase/TFv2.mp4) — the Art skin
-- [`Tfv3.mp4`](Showcase/Tfv3.mp4) — the Art skin
+- [`Tfv1.mp4`](Showcase/Tfv1.mp4) — rotating cards
+- [`TFv2.mp4`](Showcase/TFv2.mp4) — the fish tank in motion
 
 ---
 
 ## Getting started
 
-Run from source with Godot 4.6 (**GL Compatibility** renderer — the transparent always-on-top
-window depends on it):
+### Just want to run it
+
+Download the `.zip` from [the latest release](../../releases/latest), unzip it, run
+`Tickerfish.exe`. Nothing to install.
+
+Two things worth knowing:
+
+- **Unzip it somewhere you can write to** — your Desktop or Documents is fine, `C:\Program Files`
+  is not. Tickerfish saves `DataBridge/` and `api_config.json` next to the executable, and those
+  writes fail silently without permission.
+- **Windows and your antivirus will both complain.** See below — it is expected, and I cannot make
+  it go away.
+
+> [!WARNING]
+> **Expect two warnings on first run.**
+>
+> Windows SmartScreen shows *"Windows protected your PC"* — click **More info → Run anyway**.
+> Norton, and sometimes other engines, flag the file as well. Windows Defender may warn too.
+>
+> This is a well-known false positive for Godot-built software: the engine and every asset are
+> packed into a single self-extracting executable, which is exactly the shape heuristic scanners
+> associate with droppers. The build is also not code-signed, because a certificate costs several
+> hundred dollars a year and this is a free hobby project.
+>
+> I cannot fix this. What you *can* do, in increasing order of paranoia:
+>
+> - Check the download against `SHA256SUMS.txt`, attached to the same release.
+> - Upload the `.exe` to [VirusTotal](https://www.virustotal.com/) and see how many engines agree.
+> - Read the [build workflow](.github/workflows/build-windows.yml). Every release is built by
+>   GitHub Actions from this repository — no binary is ever uploaded from my machine.
+> - Skip the download entirely and build it yourself from source. Instructions are below.
+>
+> If your antivirus quarantines it and you still want to run it, you will need to add an exclusion
+> yourself. I would rather tell you that plainly than pretend the warning is not there.
+
+### Or run from source
+
+Godot 4.6, **GL Compatibility** renderer (the transparent always-on-top window depends on it):
 
 ```bash
 godot --path /path/to/Tickerfish
 ```
 
-Want a standalone `.exe`? Open the project in Godot, install the export templates when prompted,
-then **Project → Export → Windows Desktop → Export Project**. The preset is in the repo. Put the
-result in a folder you can write to — Tickerfish saves `DataBridge/` and `api_config.json` next to
-the executable.
+### Or build your own .exe
+
+Open the project in Godot, install the export templates when prompted, then
+**Project → Export → Windows Desktop → Export Project**. The preset is in the repo.
+
+---
 
 **Crypto works immediately.** BTC, ETH and anything else on Binance needs no API key.
 
@@ -111,6 +148,10 @@ the executable.
 
 The key is checked on save. It is stored in `api_config.json` beside the executable and is never
 uploaded anywhere. `api_config.example.json` is a blank template.
+
+> [!CAUTION]
+> `api_config.json` holds your key in plain text. **Empty it before you zip up the program folder
+> and send it to anyone** — otherwise your key goes with it.
 
 Finnhub's free tier is for personal use; check their terms if you plan to use it commercially.
 

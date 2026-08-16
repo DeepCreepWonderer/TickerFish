@@ -69,23 +69,57 @@ Godot 4.6 / GDScript，Windows。 &nbsp;·&nbsp; [English](README.md)
 
 几段短片，无声音：
 
-- [`Tfv1.mp4`](Showcase/Tfv1.mp4) —— 鱼缸模式
-- [`TFv2.mp4`](Showcase/TFv2.mp4) —— 美术鱼皮肤
-- [`Tfv3.mp4`](Showcase/Tfv3.mp4) —— 美术鱼皮肤
+- [`Tfv1.mp4`](Showcase/Tfv1.mp4) —— 轮播大卡
+- [`TFv2.mp4`](Showcase/TFv2.mp4) —— 鱼缸模式
 
 ---
 
 ## 上手
 
-用 Godot 4.6 从源码运行（渲染器需选 **GL Compatibility**，透明置顶窗口依赖它）：
+### 只想跑起来
+
+到 [最新 Release](../../releases/latest) 下载 `.zip`，解压，双击 `Tickerfish.exe`。不需要装任何东西。
+
+两件事要注意：
+
+- **解压到可写目录** —— 桌面或文档都行，`C:\Program Files` 不行。Tickerfish 会把 `DataBridge/`
+  和 `api_config.json` 写在可执行文件旁边，没有权限时这些写入会静默失败。
+- **Windows 和杀毒软件都会报警。** 见下 —— 这是预料之中的，而且我解决不了。
+
+> [!WARNING]
+> **首次运行会遇到两个警告。**
+>
+> Windows SmartScreen 弹「Windows 已保护你的电脑」—— 点 **更多信息 → 仍要运行**。
+> Norton 会直接报毒，有时其它引擎也会，Windows Defender 也可能警告。
+>
+> 这是 Godot 打包程序上众所周知的误报：整个引擎和全部资源被压进一个自解压的可执行文件里，
+> 而这个形态正是启发式扫描器判定为「投放器」的特征。这个 exe 也确实没有代码签名 ——
+> 证书一年好几百美元，而这是个免费的爱好项目。
+>
+> 我修不了这个。你能做的，按偏执程度递增：
+>
+> - 用同一个 Release 里附的 `SHA256SUMS.txt` 核对下载的文件。
+> - 把 `.exe` 传到 [VirusTotal](https://www.virustotal.com/) 看多少引擎有意见。
+> - 读一下[构建脚本](.github/workflows/build-windows.yml)。每个 Release 都由 GitHub Actions
+>   从本仓库构建，从来没有任何二进制文件是从我本机上传的。
+> - 干脆别下载，自己从源码构建。方法见下。
+>
+> 如果杀毒软件把它隔离了而你还是想跑，得自己加白名单。与其假装这个警告不存在，不如直说。
+
+### 或者从源码运行
+
+Godot 4.6，渲染器选 **GL Compatibility**（透明置顶窗口依赖它）：
 
 ```bash
 godot --path /path/to/Tickerfish
 ```
 
-想要独立 `.exe`？在 Godot 里打开项目，按提示装好导出模板，然后 **项目 → 导出 → Windows Desktop
-→ 导出项目**，预设已在仓库里。导出结果请放在可写目录 —— Tickerfish 会把 `DataBridge/` 和
-`api_config.json` 写在可执行文件旁边。
+### 或者自己导出 .exe
+
+在 Godot 里打开项目，按提示装好导出模板，然后 **项目 → 导出 → Windows Desktop → 导出项目**，
+预设已在仓库里。
+
+---
 
 **加密货币开箱即用。** BTC、ETH 以及 Binance 上的其它币种都不需要 API 密钥。
 
@@ -102,6 +136,10 @@ godot --path /path/to/Tickerfish
 
 保存时会校验密钥。密钥存在可执行文件旁的 `api_config.json` 里，不上传到任何地方。
 `api_config.example.json` 是空白模板。
+
+> [!CAUTION]
+> `api_config.json` 里的密钥是明文的。**把整个程序目录打包发给别人之前，先把它清空** ——
+> 否则你的密钥会跟着一起走。
 
 Finnhub 免费档面向个人使用；如需商业用途请查阅其条款。
 
