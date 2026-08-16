@@ -1,13 +1,21 @@
 name: Build Windows exe
 
 on:
-  workflow_dispatch:          # 手动点按钮跑
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 
+        required: false
+        default: ""
   release:
-    types: [published]        # 发布 Release 时自动跑并附件
+    types: [published]        
+
+permissions:
+  contents: write            
 
 env:
   GODOT_VERSION: 4.6.2
-  EXPORT_PRESET: TickerFish_Demo
+  EXPORT_PRESET: Windows Desktop
 
 jobs:
   build:
@@ -15,6 +23,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Work out the target release tag
+        id: target
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$TAG" ]; then TAG="${{ github.event.inputs.release_tag }}"; fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ -n "$TAG" ]; then
+            echo "attach=yes" >> "$GITHUB_OUTPUT"
+            echo "将挂到 Release: $TAG"
+          else
+            echo "attach=no" >> "$GITHUB_OUTPUT"
+            echo "没有给 tag,只产出 artifact"
+          fi
 
       - name: Install Godot and export templates
         run: |
@@ -48,7 +70,7 @@ jobs:
           fi
           echo "Clean: no third-party sprite sheet in the build."
 
-      - name: Assemble release zip
+      - name: Assemble payload
         run: |
           mkdir -p dist/Tickerfish/FishArt
           cp build/Tickerfish.exe          dist/Tickerfish/
@@ -60,29 +82,28 @@ jobs:
           cp -r licenses                   dist/Tickerfish/
           cp FishArt/.gdignore             dist/Tickerfish/FishArt/
 
-      # Release 走这条:打成一个真 zip 附到 Release 上
-      - name: Package and checksum
-        if: github.event_name == 'release'
-        run: |
-          TAG="${{ github.event.release.tag_name }}"
-          cd dist
-          zip -qr "Tickerfish-${TAG}-windows-x86_64.zip" Tickerfish
-          sha256sum "Tickerfish-${TAG}-windows-x86_64.zip" | tee SHA256SUMS.txt
-
-      - name: Attach to the release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/Tickerfish-*.zip
-            dist/SHA256SUMS.txt
-
-      # 手动触发走这条:上传目录本身。
-      # upload-artifact 下载时总会自己打一次 zip,再喂它一个 zip 就会套两层。
       - name: Upload as a build artifact
-        if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
         with:
           name: Tickerfish-windows-x86_64
           path: dist/Tickerfish/
-          include-hidden-files: true   # 否则 FishArt/.gdignore 会被默默丢掉
+          include-hidden-files: true 
+
+      - name: Package and checksum
+        if: steps.target.outputs.attach == 'yes'
+        run: |
+          TAG="${{ steps.target.outputs.tag }}"
+          cd dist
+          zip -qr "Tickerfish-${TAG}-windows-x86_64.zip" Tickerfish
+          sha256sum "Tickerfish-${TAG}-windows-x86_64.zip" | tee SHA256SUMS.txt
+
+
+      - name: Attach to the release
+        if: steps.target.outputs.attach == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ steps.target.outputs.tag }}" \
+            dist/Tickerfish-*.zip \
+            dist/SHA256SUMS.txt \
+            --clobber
