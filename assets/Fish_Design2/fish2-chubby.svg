@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="120" viewBox="0 0 96 60">
+  <path d="M26 30 C17 22, 10 18, 6 16 C10 24, 10 36, 6 44 C10 42, 17 38, 26 30 Z" fill="#8b9098" transform="translate(26,30) scale(0.8) translate(-26,-30)"></path>
+  <path d="M23 30 C26 12, 52 7, 73 16 C87 22, 91 30, 87 38 C81 48, 52 53, 33 46 C26 43, 20 39, 23 30 Z" fill="#8b9098"></path>
+  <circle cx="77" cy="27" r="2.6" fill="#20242b"></circle>
+</svg>
