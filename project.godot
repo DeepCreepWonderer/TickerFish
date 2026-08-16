@@ -1,0 +1,53 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Tickerfish"
+config/version="0.99"
+run/main_scene="res://tickerfish.tscn"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Tickerfish"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://icon.png"
+
+[audio]
+
+driver/driver="Dummy"
+
+[autoload]
+
+DataReader="*res://scripts/data_reader.gd"
+IdleSystem="*res://scripts/idle_system.gd"
+BackendManager="*res://scripts/backend_manager.gd"
+StockFetcher="*res://scripts/stock_fetcher.gd"
+AlertSystem="*res://scripts/alert_system.gd"
+Lang="*res://scripts/lang.gd"
+PriceRecorder="*res://scripts/price_recorder.gd"
+AlertPopupManager="*res://scripts/alert_popup_manager.gd"
+Icon="*res://scripts/taskbar_icon_animator.gd"
+
+[display]
+
+window/size/borderless=true
+window/size/always_on_top=true
+window/size/transparent=true
+window/subwindows/embed_subwindows=false
+window/per_pixel_transparency/allowed=true
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

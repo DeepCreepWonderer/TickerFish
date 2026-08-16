@@ -1,0 +1,24 @@
+# Secrets — never commit. Copy api_config.example.json to api_config.json and fill in your key.
+api_config.json
+
+# Godot editor cache / imports
+.godot/
+*.import.bak
+
+# Runtime data written by the app
+DataBridge/
+*.tmp
+
+# Exports
+build/
+export/
+*.exe
+*.pck
+*.zip
+export.cfg
+export_credentials.cfg
+
+# Third-party paid art the user supplies (never commit).
+# The folder and its .gdignore ship so the drop-in location exists and Godot skips it.
+FishArt/*
+!FishArt/.gdignore

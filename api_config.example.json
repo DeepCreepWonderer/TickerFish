@@ -1,0 +1,10 @@
+{
+  "api_keys": {
+    "finnhub": ""
+  },
+  "stocks": {
+    "api_key_ref": "finnhub",
+    "min_interval_seconds": 60.0,
+    "provider": "finnhub"
+  }
+}
