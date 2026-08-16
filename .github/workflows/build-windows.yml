@@ -1,9 +1,9 @@
 name: Build Windows exe
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:          # 手动点按钮跑
   release:
-    types: [published]
+    types: [published]        # 发布 Release 时自动跑并附件
 
 env:
   GODOT_VERSION: 4.6.2
@@ -59,9 +59,15 @@ jobs:
           cp api_config.example.json       dist/Tickerfish/
           cp -r licenses                   dist/Tickerfish/
           cp FishArt/.gdignore             dist/Tickerfish/FishArt/
+
+      # Release 走这条:打成一个真 zip 附到 Release 上
+      - name: Package and checksum
+        if: github.event_name == 'release'
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
           cd dist
-          zip -qr Tickerfish-v${{ github.event.release.tag_name || 'dev' }}-windows-x86_64.zip Tickerfish
-          sha256sum Tickerfish-*.zip | tee SHA256SUMS.txt
+          zip -qr "Tickerfish-${TAG}-windows-x86_64.zip" Tickerfish
+          sha256sum "Tickerfish-${TAG}-windows-x86_64.zip" | tee SHA256SUMS.txt
 
       - name: Attach to the release
         if: github.event_name == 'release'
@@ -71,9 +77,12 @@ jobs:
             dist/Tickerfish-*.zip
             dist/SHA256SUMS.txt
 
+      # 手动触发走这条:上传目录本身。
+      # upload-artifact 下载时总会自己打一次 zip,再喂它一个 zip 就会套两层。
       - name: Upload as a build artifact
         if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
         with:
           name: Tickerfish-windows-x86_64
-          path: dist/Tickerfish-*.zip
+          path: dist/Tickerfish/
+          include-hidden-files: true   # 否则 FishArt/.gdignore 会被默默丢掉
