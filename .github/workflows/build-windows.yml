@@ -1,0 +1,79 @@
+name: Build Windows exe
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+env:
+  GODOT_VERSION: 4.6.2
+  EXPORT_PRESET: TickerFish_Demo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot and export templates
+        run: |
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          wget -q "$BASE/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          wget -q "$BASE/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          mv templates/* "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+
+      - name: Import project
+        run: ./godot --headless --import
+
+      - name: Regression suite
+        run: ./godot --headless res://tests/regression_test.tscn
+
+      - name: Export Windows binary
+        run: |
+          mkdir -p build
+          ./godot --headless --export-release "$EXPORT_PRESET" build/Tickerfish.exe
+          test -f build/Tickerfish.exe
+
+      - name: Fail if any third-party art leaked into the build
+        run: |
+          if strings build/Tickerfish.exe | grep -qiE 'Fishes.?Sprite.?Sheet'; then
+            echo "::error::Paid sprite sheet found inside the exported binary"
+            exit 1
+          fi
+          echo "Clean: no third-party sprite sheet in the build."
+
+      - name: Assemble release zip
+        run: |
+          mkdir -p dist/Tickerfish/FishArt
+          cp build/Tickerfish.exe          dist/Tickerfish/
+          cp LICENSE                       dist/Tickerfish/
+          cp THIRD-PARTY-NOTICES.md        dist/Tickerfish/
+          cp README.md README.zh-CN.md     dist/Tickerfish/
+          cp FISH-ART-GUIDE.md FISH-ART-GUIDE.zh-CN.md dist/Tickerfish/
+          cp api_config.example.json       dist/Tickerfish/
+          cp -r licenses                   dist/Tickerfish/
+          cp FishArt/.gdignore             dist/Tickerfish/FishArt/
+          cd dist
+          zip -qr Tickerfish-v${{ github.event.release.tag_name || 'dev' }}-windows-x86_64.zip Tickerfish
+          sha256sum Tickerfish-*.zip | tee SHA256SUMS.txt
+
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/Tickerfish-*.zip
+            dist/SHA256SUMS.txt
+
+      - name: Upload as a build artifact
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tickerfish-windows-x86_64
+          path: dist/Tickerfish-*.zip
